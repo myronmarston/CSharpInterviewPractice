@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace CSharpInterviewPractice
 {
-    public class TreeNode<T> where T : IComparable
+    public class TreeNode<T>
     {
         public TreeNode(T value)
         {
@@ -19,13 +19,13 @@ namespace CSharpInterviewPractice
             this.parent = parent;
         }
 
-        private T value;
-        private TreeNode<T> parent;
-        private IList<TreeNode<T>> children;
+        protected T value;
+        protected TreeNode<T> parent;
+        protected IList<TreeNode<T>> children;
 
         public T Value { get { return value; } } 
         public TreeNode<T> Parent { get { return parent;  } }
-        public IList<TreeNode<T>> Children { get { if (children == null) children = new List<TreeNode<T>>(); return children; } }
+        public virtual IList<TreeNode<T>> Children { get { if (children == null) children = new List<TreeNode<T>>(); return children; } }
 
         public TreeNode(TreeNode<T> parent)
         {
@@ -62,7 +62,7 @@ namespace CSharpInterviewPractice
             }
         }
 
-        public TreeNode<T> AddChild(T value)
+        public virtual TreeNode<T> AddChild(T value)
         {
             TreeNode<T> child = new TreeNode<T>(value, this);
             this.Children.Add(child);
