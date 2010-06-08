@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace CSharpInterviewPractice
 {
-    class BinaryTreeNode<T> : TreeNode<T> where T : IComparable
+    class BinaryTreeNode<T> : TreeNode<T>
     {
         public BinaryTreeNode(T value)
             : base(value) { }
@@ -14,8 +14,8 @@ namespace CSharpInterviewPractice
         public BinaryTreeNode(T value, BinaryTreeNode<T> parent)
             : base(value, parent) { }
 
-        public BinaryTreeNode<T> Left { get; set; }
-        public BinaryTreeNode<T> Right { get; set; } 
+        public virtual BinaryTreeNode<T> Left { get; set; }
+        public virtual BinaryTreeNode<T> Right { get; set; } 
 
         public override IList<TreeNode<T>> Children
         {
@@ -25,13 +25,13 @@ namespace CSharpInterviewPractice
             }
         }
 
-        public T LeftValue
+        public virtual T LeftValue
         {
             get { return (Left == null) ? default(T) : Left.Value; }
             set { Left = new BinaryTreeNode<T>(value, this); }
         }
 
-        public T RightValue
+        public virtual T RightValue
         {
             get { return (Right == null) ? default(T) : Right.Value; }
             set { Right = new BinaryTreeNode<T>(value, this); }
