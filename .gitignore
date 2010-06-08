@@ -1,0 +1,6 @@
+*.csproj*
+*.sln
+*.suo
+Properties/*
+bin/*
+obj/*
