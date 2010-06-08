@@ -55,11 +55,33 @@ namespace CSharpInterviewPractice
                 throw new ArgumentException("Value is alredy present in the tree.", "value");
             }
         }
+
+        public int BalanceFactor { get { return LeftHeight - RightHeight; } }
+        private int RightHeight { get { return Right == null ? 0 : Right.Height + 1; } }
+        private int LeftHeight { get { return Left == null ? 0 : Left.Height + 1; } }
+
+        public bool IsBalanced { get { return Math.Abs(BalanceFactor) < 2; } }
     }
 
     [TestFixture]
     class BinarySearchTreeNodeTest
     {
+        [Test]
+        public void BalancePropertiesReturnExpectedValues()
+        {
+            BinarySearchTreeNode<int> root = new BinarySearchTreeNode<int>(12);
+            Assert.AreEqual(0, root.BalanceFactor);
+            Assert.IsTrue(root.IsBalanced);
+
+            root.Insert(8);
+            Assert.AreEqual(1, root.BalanceFactor);
+            Assert.IsTrue(root.IsBalanced);
+
+            root.Insert(3);
+            Assert.AreEqual(2, root.BalanceFactor);
+            Assert.IsFalse(root.IsBalanced);
+        }
+
         [Test]
         public void InsertRejectsValuesAlreadyPresent()
         {
