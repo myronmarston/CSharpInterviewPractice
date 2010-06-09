@@ -55,8 +55,8 @@ namespace CSharpInterviewPractice
         }
 
         public int BalanceFactor { get { return LeftHeight - RightHeight; } }
-        private int RightHeight { get { return Right == null ? 0 : Right.Height + 1; } }
-        private int LeftHeight { get { return Left == null ? 0 : Left.Height + 1; } }
+        public int RightHeight { get { return Right == null ? 0 : Right.Height + 1; } }
+        public int LeftHeight { get { return Left == null ? 0 : Left.Height + 1; } }
 
         public bool IsBalanced { get { return Math.Abs(BalanceFactor) < 2; } }
 

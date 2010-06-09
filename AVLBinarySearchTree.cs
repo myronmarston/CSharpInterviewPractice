@@ -18,100 +18,36 @@ namespace CSharpInterviewPractice
         public BinarySearchTreeNode<T> Insert(T value)
         {
             BinarySearchTreeNode<T> node = this.Root.Insert(value);
-            Rebalancer<T> rebalancer = new Rebalancer<T>(node);
-            this.root = rebalancer.NewRoot();
+            this.root = RebalanceAndReturnNewRoot(node);
             return node;
         }
 
-        public class Rebalancer<T> where T : IComparable
+        private static BinarySearchTreeNode<T> RebalanceAndReturnNewRoot(BinarySearchTreeNode<T> node)
         {
-            private BinarySearchTreeNode<T> subTreeParent;
-            private BinarySearchTreeNode<T> subTreeRoot;
-            public BinarySearchTreeNode<T> SubTreeRoot { get { return subTreeRoot; } }
-
-            public Rebalancer(BinarySearchTreeNode<T> subTreeRoot)
-            { 
-                this.subTreeRoot = subTreeRoot;
-                this.subTreeParent = (BinarySearchTreeNode<T>) SubTreeRoot.Parent;
+            if (Math.Abs(node.BalanceFactor) <= 1)
+            {
+                return node.IsRoot ? node : RebalanceAndReturnNewRoot((BinarySearchTreeNode<T>)node.Parent);
             }
 
-            protected delegate BinarySearchTreeNode<T> RebalanceStrategy(BinarySearchTreeNode<T> child, BinarySearchTreeNode<T> grandChild);
-
-            protected BinarySearchTreeNode<T> DetermineNewRoot(BinarySearchTreeNode<T> otherNode)
+            TreeRotater<T> rotater;
+            if (node.LeftHeight > node.RightHeight)
             {
-                if (subTreeParent == null) return otherNode;
-
-                if (subTreeParent.Right == SubTreeRoot)
+                if (node.Left.RightHeight > node.Left.LeftHeight)
                 {
-                    subTreeParent.Right = otherNode;
+                    node.Left = (BinarySearchTreeNode<T>) new LeftRotater<T>().Rotate(node.Left);
                 }
-                else
+                rotater = new RightRotater<T>();
+            }
+            else
+            {
+                if (node.Right.LeftHeight > node.Right.RightHeight)
                 {
-                    subTreeParent.Left = otherNode;
+                    node.Right = (BinarySearchTreeNode<T>) new RightRotater<T>().Rotate(node.Right);
                 }
-                return subTreeParent;
+                rotater = new LeftRotater<T>();
             }
 
-            protected BinarySearchTreeNode<T> RightRightStrategy(BinarySearchTreeNode<T> child, BinarySearchTreeNode<T> grandChild)
-            {
-                SubTreeRoot.Right = child.Left;
-                child.Left = SubTreeRoot;
-                return DetermineNewRoot(child);
-            }
-
-            protected BinarySearchTreeNode<T> LeftLeftStrategy(BinarySearchTreeNode<T> child, BinarySearchTreeNode<T> grandChild)
-            {
-                SubTreeRoot.Left = child.Right;
-                child.Right = SubTreeRoot;
-                return DetermineNewRoot(child);
-            }
-
-            protected BinarySearchTreeNode<T> RightLeftStrategy(BinarySearchTreeNode<T> child, BinarySearchTreeNode<T> grandChild)
-            {
-                child.Left = grandChild.Right;
-                SubTreeRoot.Right = grandChild.Left;
-                grandChild.Right = child;
-                grandChild.Left = SubTreeRoot;
-                return DetermineNewRoot(grandChild);
-            }
-
-            protected BinarySearchTreeNode<T> LeftRightStrategy(BinarySearchTreeNode<T> child, BinarySearchTreeNode<T> grandChild)
-            {
-                SubTreeRoot.Left = grandChild.Right;
-                child.Right = grandChild.Left;
-                grandChild.Left = child;
-                grandChild.Right = SubTreeRoot;
-                return DetermineNewRoot(grandChild);
-            }
-
-            public BinarySearchTreeNode<T> NewRoot()
-            {
-                BinarySearchTreeNode<T> newRoot = this.SubTreeRoot;
-                if (!subTreeRoot.IsBalanced)
-                {
-                    RebalanceStrategy strategy;
-                    BinarySearchTreeNode<T> higherChild = subTreeRoot.HigherChild;
-                    BinarySearchTreeNode<T> higherGrandChild = higherChild.HigherChild;
-
-                    if (subTreeRoot.BalanceFactor > 0)
-                    {
-                        if (higherChild.BalanceFactor > 0) strategy = LeftLeftStrategy;
-                        else strategy = LeftRightStrategy;
-                    }
-                    else
-                    {
-                        if (higherChild.BalanceFactor > 0) strategy = RightLeftStrategy;
-                        else strategy = RightRightStrategy;
-                    }
-
-                    newRoot = strategy(higherChild, higherGrandChild);
-                }
-
-                if (newRoot.IsRoot) return newRoot;
-
-                Rebalancer<T> parentBalancer = new Rebalancer<T>((BinarySearchTreeNode<T>)newRoot.Parent);
-                return parentBalancer.NewRoot();
-            }
+            return (BinarySearchTreeNode<T>) rotater.Rotate(node);
         }
     }
 
@@ -176,6 +112,23 @@ namespace CSharpInterviewPractice
             Assert.AreEqual(4, tree.Root.Value);
             Assert.AreEqual(3, tree.Root.LeftValue);
             Assert.AreEqual(5, tree.Root.RightValue);
+        }
+
+        [Test]
+        public void StaysBalancedWith1000RandomInsertions()
+        {
+            // create a shuffled queue of 1 to 1000
+            int[] numbers = new int[1000];
+            for (int i = 0; i < 1000; i++) numbers[i] = i;
+            IOrderedEnumerable<int> shuffled = numbers.OrderBy(x => Guid.NewGuid());
+            Queue<int> queue = new Queue<int>(shuffled);
+
+            AVLBinarySearchTree<int> tree = new AVLBinarySearchTree<int>(queue.Dequeue());
+            while (queue.Count > 0)
+            {
+                tree.Insert(queue.Dequeue());
+                Assert.IsTrue(tree.Root.IsBalanced);
+            }
         }
     }
 }
