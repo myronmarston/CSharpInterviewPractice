@@ -9,8 +9,6 @@ namespace CSharpInterviewPractice
     class BinarySearchTreeNode<T> : BinaryTreeNode<T> where T : IComparable
     {
         public BinarySearchTreeNode(T value) : base(value) { }
-        public BinarySearchTreeNode(T value, BinarySearchTreeNode<T> parent) : base(value, parent) { }
-
 
         new public BinarySearchTreeNode<T> Left
         {
@@ -27,13 +25,13 @@ namespace CSharpInterviewPractice
         public override T LeftValue
         {
             get { return base.LeftValue; }
-            set { Left = new BinarySearchTreeNode<T>(value, this); }
+            set { Left = new BinarySearchTreeNode<T>(value); }
         }
 
         public override T RightValue
         {
             get { return base.RightValue; }
-            set { Right = new BinarySearchTreeNode<T>(value, this); }
+            set { Right = new BinarySearchTreeNode<T>(value); }
         }
 
         public BinarySearchTreeNode<T> Insert(T value)

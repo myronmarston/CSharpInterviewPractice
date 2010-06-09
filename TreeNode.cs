@@ -24,7 +24,12 @@ namespace CSharpInterviewPractice
         protected IList<TreeNode<T>> children;
 
         public T Value { get { return value; } } 
-        public TreeNode<T> Parent { get { return parent;  } }
+        public TreeNode<T> Parent 
+        { 
+            get { return parent;  }
+            protected set { parent = value; } 
+        }
+
         public virtual IList<TreeNode<T>> Children { get { if (children == null) children = new List<TreeNode<T>>(); return children; } }
 
         public TreeNode(TreeNode<T> parent)
