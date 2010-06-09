@@ -6,47 +6,74 @@ using NUnit.Framework;
 
 namespace CSharpInterviewPractice
 {
-    delegate void VisitNodeDelegate<T>(BinaryTreeNode<T> node);
+    delegate bool VisitNodeDelegate<T>(BinaryTreeNode<T> node);
 
     interface TreeTraverser<T>
     {
-        void Traverse(BinaryTreeNode<T> node, VisitNodeDelegate<T> visit);
+        BinaryTreeNode<T> Traverse(BinaryTreeNode<T> node, VisitNodeDelegate<T> visit);
     }
 
     class PreOrderTraverser<T> : TreeTraverser<T>
     {
-        public void Traverse(BinaryTreeNode<T> node, VisitNodeDelegate<T> visit)
+        public BinaryTreeNode<T> Traverse(BinaryTreeNode<T> node, VisitNodeDelegate<T> visit)
         {
-            visit(node);
-            if (node.Left != null) Traverse(node.Left, visit);
-            if (node.Right != null) Traverse(node.Right, visit);
+            BinaryTreeNode<T> returnedNode; 
+
+            if (visit(node)) return node;
+            if (node.Left != null)
+            {
+                returnedNode = Traverse(node.Left, visit);
+                if (returnedNode != null) return returnedNode;
+            }
+
+            if (node.Right != null) return Traverse(node.Right, visit);
+
+            return null;
         }
     }
 
     class InOrderTraverser<T> : TreeTraverser<T>
     {
-        public void Traverse(BinaryTreeNode<T> node, VisitNodeDelegate<T> visit)
+        public BinaryTreeNode<T> Traverse(BinaryTreeNode<T> node, VisitNodeDelegate<T> visit)
         {
-            if (node.Left != null) Traverse(node.Left, visit);
-            visit(node);
-            if (node.Right != null) Traverse(node.Right, visit);
+            BinaryTreeNode<T> returnedNode;
+            if (node.Left != null)
+            {
+                returnedNode = Traverse(node.Left, visit);
+                if (returnedNode != null) return returnedNode;
+            }
+            if (visit(node)) return node;
+            if (node.Right != null) return Traverse(node.Right, visit);
+            return null;
         }
     }
 
     class PostOrderTraverser<T> : TreeTraverser<T>
     {
-        public void Traverse(BinaryTreeNode<T> node, VisitNodeDelegate<T> visit)
+        public BinaryTreeNode<T> Traverse(BinaryTreeNode<T> node, VisitNodeDelegate<T> visit)
         {
-            if (node.Left != null) Traverse(node.Left, visit);
-            if (node.Right != null) Traverse(node.Right, visit);
-            visit(node);
+            BinaryTreeNode<T> returnedNode;
+            if (node.Left != null)
+            {
+                returnedNode = Traverse(node.Left, visit);
+                if (returnedNode != null) return returnedNode;
+            }
+
+            if (node.Right != null)
+            {
+                returnedNode = Traverse(node.Right, visit);
+                if (returnedNode != null) return returnedNode;
+            }
+
+            if (visit(node)) return node;
+            return null;
         }
     }
 
     class BreadthFirstTraverser<T> : TreeTraverser<T>
     {
         private Queue<BinaryTreeNode<T>> unvisitedNodes = new Queue<BinaryTreeNode<T>>();
-        public void Traverse(BinaryTreeNode<T> node, VisitNodeDelegate<T> visit)
+        public BinaryTreeNode<T> Traverse(BinaryTreeNode<T> node, VisitNodeDelegate<T> visit)
         {
             BinaryTreeNode<T> unvisitedNode;
             Queue<BinaryTreeNode<T>> unvisitedNodes = new Queue<BinaryTreeNode<T>>();
@@ -55,10 +82,12 @@ namespace CSharpInterviewPractice
             while (unvisitedNodes.Count > 0)
             {
                 unvisitedNode = unvisitedNodes.Dequeue();
-                visit(unvisitedNode);
+                if (visit(unvisitedNode)) return unvisitedNode;
 
                 foreach (BinaryTreeNode<T> childNode in unvisitedNode.Children) unvisitedNodes.Enqueue(childNode);
             }
+
+            return null;
         }
     }
 
@@ -83,12 +112,26 @@ namespace CSharpInterviewPractice
             BinaryTreeNode<char> root = ConstructTree();
             List<char> actual = new List<char>();
 
-            traverser.Traverse(root, delegate (BinaryTreeNode<char> node)
+            BinaryTreeNode<char> returnedNode = traverser.Traverse(root, delegate(BinaryTreeNode<char> node)
             {
                 actual.Add(node.Value);
+                return false;
             });
 
             Assert.AreEqual(expected, actual.ToArray<char>());
+            Assert.IsNull(returnedNode);
+
+            // make sure it exits early and returns the node
+            int count = 0;
+            returnedNode = traverser.Traverse(root, delegate(BinaryTreeNode<char> node)
+            {
+                if (count == 3) return true;
+                count++;
+                return false;
+            });
+
+            Assert.AreEqual(expected[3], returnedNode.Value);
+            Assert.AreEqual(3, count);
         }
 
         [Test]
