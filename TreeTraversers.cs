@@ -43,6 +43,25 @@ namespace CSharpInterviewPractice
         }
     }
 
+    class BreadthFirstTraverser<T> : TreeTraverser<T>
+    {
+        private Queue<BinaryTreeNode<T>> unvisitedNodes = new Queue<BinaryTreeNode<T>>();
+        public void Traverse(BinaryTreeNode<T> node, VisitNodeDelegate<T> visit)
+        {
+            BinaryTreeNode<T> unvisitedNode;
+            Queue<BinaryTreeNode<T>> unvisitedNodes = new Queue<BinaryTreeNode<T>>();
+            unvisitedNodes.Enqueue(node);
+
+            while (unvisitedNodes.Count > 0)
+            {
+                unvisitedNode = unvisitedNodes.Dequeue();
+                visit(unvisitedNode);
+
+                foreach (BinaryTreeNode<T> childNode in unvisitedNode.Children) unvisitedNodes.Enqueue(childNode);
+            }
+        }
+    }
+
     [TestFixture]
     class TreeTraversersTest
     {
@@ -88,6 +107,12 @@ namespace CSharpInterviewPractice
         public void PostOrderTest()
         {
             PerformTest(new PostOrderTraverser<char>(), new char[] { 'A', 'C', 'E', 'D', 'B', 'H', 'I', 'G', 'F' });
+        }
+
+        [Test]
+        public void BreadthFirstTest()
+        {
+            PerformTest(new BreadthFirstTraverser<char>(), new char[] { 'F', 'B', 'G', 'A', 'D', 'I', 'C', 'E', 'H' });
         }
     }
 }
