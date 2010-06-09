@@ -59,6 +59,17 @@ namespace CSharpInterviewPractice
         private int LeftHeight { get { return Left == null ? 0 : Left.Height + 1; } }
 
         public bool IsBalanced { get { return Math.Abs(BalanceFactor) < 2; } }
+
+        public BinarySearchTreeNode<T> HigherChild
+        { 
+            get
+            {
+                int bFactor = BalanceFactor;
+                if (bFactor == 0) return null;
+                else if (bFactor > 0) return Left;
+                else return Right;
+            }
+       }
     }
 
     [TestFixture]
@@ -78,6 +89,38 @@ namespace CSharpInterviewPractice
             root.Insert(3);
             Assert.AreEqual(2, root.BalanceFactor);
             Assert.IsFalse(root.IsBalanced);
+        }
+
+        [Test]
+        public void HigherChildReturnsLeftChildIfLeftChildIsHigher()
+        {
+            BinarySearchTreeNode<int> root = new BinarySearchTreeNode<int>(12);
+            root.Insert(5);
+            root.Insert(15);
+            root.Insert(9);
+
+            Assert.AreSame(root.Left, root.HigherChild);
+        }
+
+        [Test]
+        public void HigherChildReturnsRightChildIfRightChildIsHigher()
+        {
+            BinarySearchTreeNode<int> root = new BinarySearchTreeNode<int>(12);
+            root.Insert(5);
+            root.Insert(15);
+            root.Insert(13);
+
+            Assert.AreSame(root.Right, root.HigherChild);
+        }
+
+        [Test]
+        public void HigherChildReturnsNullIfNeitherChildIsHigher()
+        {
+            BinarySearchTreeNode<int> root = new BinarySearchTreeNode<int>(12);
+            root.Insert(5);
+            root.Insert(15);
+
+            Assert.IsNull(root.HigherChild);
         }
 
         [Test]
