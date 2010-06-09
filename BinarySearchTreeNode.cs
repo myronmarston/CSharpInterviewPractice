@@ -69,7 +69,13 @@ namespace CSharpInterviewPractice
                 else if (bFactor > 0) return Left;
                 else return Right;
             }
-       }
+        }
+
+        public BinarySearchTreeNode<T> FindNode(T value)
+        {
+            TreeTraverser<T> tr = new InOrderTraverser<T>();
+            return (BinarySearchTreeNode<T>) tr.Traverse(this, delegate(BinaryTreeNode<T> node) { return (value.CompareTo(node.Value) == 0); });
+        }
     }
 
     [TestFixture]
@@ -159,6 +165,50 @@ namespace CSharpInterviewPractice
             Assert.IsNull(root.Left.Left.Left);
             Assert.IsNull(root.Left.Left.Right.Left);
             Assert.IsNull(root.Left.Left.Right.Right);            
+        }
+
+        [Test]
+        public void FindNodeFindsRoot()
+        {
+            BinarySearchTreeNode<int> root = new BinarySearchTreeNode<int>(12);
+            root.Insert(8);
+            root.Insert(3);
+            root.Insert(15);
+
+            Assert.AreSame(root, root.FindNode(12));
+        }
+
+        [Test]
+        public void FindNodeFindsMiddleNode()
+        {
+            BinarySearchTreeNode<int> root = new BinarySearchTreeNode<int>(12);
+            BinarySearchTreeNode<int> eight = root.Insert(8);
+            BinarySearchTreeNode<int> three = root.Insert(3);
+            BinarySearchTreeNode<int> fifteen = root.Insert(15);
+
+            Assert.AreSame(eight, root.FindNode(8));
+        }
+
+        [Test]
+        public void FindNodeFindsLeafNode()
+        {
+            BinarySearchTreeNode<int> root = new BinarySearchTreeNode<int>(12);
+            BinarySearchTreeNode<int> eight = root.Insert(8);
+            BinarySearchTreeNode<int> three = root.Insert(3);
+            BinarySearchTreeNode<int> fifteen = root.Insert(15);
+
+            Assert.AreSame(fifteen, root.FindNode(15));
+        }
+
+        [Test]
+        public void FindNodeReturnsNullWhenNotFound()
+        {
+            BinarySearchTreeNode<int> root = new BinarySearchTreeNode<int>(12);
+            BinarySearchTreeNode<int> eight = root.Insert(8);
+            BinarySearchTreeNode<int> three = root.Insert(3);
+            BinarySearchTreeNode<int> fifteen = root.Insert(15);
+
+            Assert.IsNull(root.FindNode(6));
         }
     }
 }
