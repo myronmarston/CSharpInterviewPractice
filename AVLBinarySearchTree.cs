@@ -22,6 +22,49 @@ namespace CSharpInterviewPractice
             return node;
         }
 
+        public BinarySearchTreeNode<T> Delete(T value)
+        {
+            BinarySearchTreeNode<T> node = this.Root.FindNode(value);
+            BinarySearchTreeNode<T> replacementNode = null;
+
+            if (node == null) return null;
+
+            if (!node.IsLeaf)
+            {
+                replacementNode = RemoveReplacementNode(node);
+                replacementNode.Left = node.Left;
+                replacementNode.Right = node.Right;
+            }
+
+            if (!node.IsRoot)
+            {
+                if (node.Parent.Left == node) node.Parent.Left = replacementNode;
+                else if (node.Parent.Right == node) node.Parent.Right = replacementNode;
+            }
+
+            return node;
+        }
+
+        private static BinarySearchTreeNode<T> RemoveReplacementNode(BinarySearchTreeNode<T> node)
+        {
+            if (node.LeftHeight >= node.RightHeight)
+            {
+                node = node.Left;
+                while (node.Right != null) node = node.Right;
+                if (node.Left != null) node.Parent.Right = node.Left;
+                return node;
+            }
+            else if (node.RightHeight > node.LeftHeight)
+            {
+                node = node.Right;
+                while (node.Left != null) node = node.Left;
+                if (node.Right != null) node.Parent.Left = node.Right;
+                return node;
+            }
+            
+            return null;
+        }
+
         private static BinarySearchTreeNode<T> RebalanceAndReturnNewRoot(BinarySearchTreeNode<T> node)
         {
             BinarySearchTreeNode<T> nextNode;
@@ -157,7 +200,7 @@ namespace CSharpInterviewPractice
         }
 
         [Test]
-        public void StaysBalancedWith100RandomInsertions()
+        public void StaysBalancedWithRandomInsertionsAndDeletions()
         {
             int nodeCount = 100;
             // create a shuffled queue of 1 to 100
@@ -170,6 +213,19 @@ namespace CSharpInterviewPractice
             {
                 tree.Insert(queue.Dequeue());
                 Assert.AreEqual(nodeCount - queue.Count, tree.Root.NodeCount);
+                Assert.IsTrue(tree.Root.IsBalanced);
+            }
+
+            int value;
+            BinarySearchTreeNode<int> node;
+            queue = new Queue<int>(numbers.OrderBy(x => Guid.NewGuid()));
+            while (queue.Count > 0)
+            {
+                value = queue.Dequeue();
+                node = tree.Delete(value);
+                Assert.AreEqual(value, node.Value);
+                Assert.IsNull(tree.Delete(value));
+                Assert.AreEqual(queue.Count, tree.Root.NodeCount);
                 Assert.IsTrue(tree.Root.IsBalanced);
             }
         }

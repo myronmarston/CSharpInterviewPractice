@@ -18,7 +18,7 @@ namespace CSharpInterviewPractice
         private BinaryTreeNode<T> left;
         private BinaryTreeNode<T> right;
 
-        public BinaryTreeNode<T> Parent
+        public new BinaryTreeNode<T> Parent
         {
             get { return (BinaryTreeNode<T>) base.Parent; }
             protected set { base.Parent = value; }
