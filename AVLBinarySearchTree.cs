@@ -24,30 +24,36 @@ namespace CSharpInterviewPractice
 
         private static BinarySearchTreeNode<T> RebalanceAndReturnNewRoot(BinarySearchTreeNode<T> node)
         {
+            BinarySearchTreeNode<T> nodeParent = (BinarySearchTreeNode<T>)node.Parent;
+            TreeRotater<T> rotater;
+
             if (Math.Abs(node.BalanceFactor) <= 1)
             {
-                return node.IsRoot ? node : RebalanceAndReturnNewRoot((BinarySearchTreeNode<T>)node.Parent);
+                return nodeParent == null ? node : RebalanceAndReturnNewRoot(nodeParent);
             }
 
-            TreeRotater<T> rotater;
             if (node.LeftHeight > node.RightHeight)
             {
                 if (node.Left.RightHeight > node.Left.LeftHeight)
                 {
-                    node.Left = (BinarySearchTreeNode<T>) new LeftRotater<T>().Rotate(node.Left);
+                    node.Left = (BinarySearchTreeNode<T>)new LeftRotater<T>(node.Left).Rotate();
                 }
-                rotater = new RightRotater<T>();
+                rotater = new RightRotater<T>(node);
             }
             else
             {
                 if (node.Right.LeftHeight > node.Right.RightHeight)
                 {
-                    node.Right = (BinarySearchTreeNode<T>) new RightRotater<T>().Rotate(node.Right);
+                    node.Right = (BinarySearchTreeNode<T>)new RightRotater<T>(node.Right).Rotate();
                 }
-                rotater = new LeftRotater<T>();
+                rotater = new LeftRotater<T>(node);
             }
 
-            return (BinarySearchTreeNode<T>) rotater.Rotate(node);
+            BinarySearchTreeNode<T> subTreeRoot = (BinarySearchTreeNode<T>)rotater.Rotate();
+            if (nodeParent == null) return subTreeRoot;
+            if (nodeParent.Left == node) nodeParent.Left = subTreeRoot;
+            else nodeParent.Right = subTreeRoot;
+            return nodeParent;
         }
     }
 
@@ -115,18 +121,53 @@ namespace CSharpInterviewPractice
         }
 
         [Test]
-        public void StaysBalancedWith1000RandomInsertions()
+        public void SubtreeBalancingExample1()
         {
-            // create a shuffled queue of 1 to 1000
-            int[] numbers = new int[1000];
-            for (int i = 0; i < 1000; i++) numbers[i] = i;
-            IOrderedEnumerable<int> shuffled = numbers.OrderBy(x => Guid.NewGuid());
-            Queue<int> queue = new Queue<int>(shuffled);
+            AVLBinarySearchTree<int> tree = new AVLBinarySearchTree<int>(3);
+            tree.Insert(2);
+            tree.Insert(1);
+            tree.Insert(5);
+            tree.Insert(4);
 
+            Assert.AreEqual(5, tree.Root.NodeCount);
+            Assert.AreEqual(2, tree.Root.Value);
+            Assert.AreEqual(1, tree.Root.LeftValue);
+            Assert.AreEqual(4, tree.Root.RightValue);
+            Assert.AreEqual(3, tree.Root.Right.LeftValue);
+            Assert.AreEqual(5, tree.Root.Right.RightValue);
+        }
+
+        [Test]
+        public void SubtreeBalancingExample2()
+        {
+            AVLBinarySearchTree<int> tree = new AVLBinarySearchTree<int>(1);
+            tree.Insert(3);
+            tree.Insert(2);
+            tree.Insert(4);
+
+            Assert.AreEqual(4, tree.Root.NodeCount);
+            Assert.AreEqual(2, tree.Root.Value);
+            Assert.AreEqual(1, tree.Root.LeftValue);
+            Assert.AreEqual(3, tree.Root.RightValue);
+            Assert.AreEqual(4, tree.Root.Right.RightValue);
+        }
+
+        [Test]
+        public void StaysBalancedWith1000RandomInsertionsAndDeletions()
+        {
+            int nodeCount = 1000;
+            // create a shuffled queue of 1 to 1000
+            int[] numbers = new int[nodeCount];
+            for (int i = 0; i < nodeCount; i++) numbers[i] = i;
+            Queue<int> queue = new Queue<int>(numbers.OrderBy(x => Guid.NewGuid()));
+
+            Console.WriteLine(queue.Peek());
             AVLBinarySearchTree<int> tree = new AVLBinarySearchTree<int>(queue.Dequeue());
             while (queue.Count > 0)
             {
+                Console.WriteLine(queue.Peek());
                 tree.Insert(queue.Dequeue());
+                Assert.AreEqual(nodeCount - queue.Count, tree.Root.NodeCount);
                 Assert.IsTrue(tree.Root.IsBalanced);
             }
         }

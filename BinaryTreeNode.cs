@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using System.Diagnostics;
 
 namespace CSharpInterviewPractice
 {
+    [DebuggerDisplay("{Value} L: {LeftValue} R: {RightValue} P: {Parent == null ? default(T) : Parent.Value}")]
     class BinaryTreeNode<T> : TreeNode<T>
     {
         public BinaryTreeNode(T value) : base(value) { }
@@ -15,6 +17,25 @@ namespace CSharpInterviewPractice
 
         private BinaryTreeNode<T> left;
         private BinaryTreeNode<T> right;
+
+        public BinaryTreeNode<T> Parent
+        {
+            get { return (BinaryTreeNode<T>) base.Parent; }
+            protected set { base.Parent = value; }
+        }
+
+        // TODO: test this.
+        private void FixParentReferences(BinaryTreeNode<T> node)
+        {
+            if (node != null)
+            {
+                if (node.Parent == null) { }
+                else if (node.Parent.Left == node) node.Parent.Left = null;
+                else if (node.Parent.Right == node) node.Parent.Right = null;
+                node.Parent = this;
+            }
+        }
+
         public virtual BinaryTreeNode<T> Left
         {
             get { return left; }
@@ -22,7 +43,7 @@ namespace CSharpInterviewPractice
             {
                 if (left != null) left.Parent = null;
                 left = value;
-                if (value != null) value.Parent = this;
+                FixParentReferences(value);
             }
         }
         public virtual BinaryTreeNode<T> Right 
@@ -32,7 +53,7 @@ namespace CSharpInterviewPractice
             { 
                 if (right != null) right.Parent = null;
                 right = value;
-                if (value != null) value.Parent = this;
+                FixParentReferences(value);
             }
         } 
 

@@ -25,11 +25,12 @@ namespace CSharpInterviewPractice
 
         public BinaryTreeNode<T> Rotate()
         {
-            RootOtherSideNode = PivotRotationSideNode;
-            PivotRotationSideNode = root;
             if (rootParent == null) { }
             else if (root == rootParent.Left) rootParent.Left = pivot;
             else if (root == rootParent.Right) rootParent.Right = pivot;
+
+            RootOtherSideNode = PivotRotationSideNode;
+            PivotRotationSideNode = root;
             return pivot;
         }
     }
