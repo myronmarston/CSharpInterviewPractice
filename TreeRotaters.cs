@@ -6,36 +6,65 @@ using NUnit.Framework;
 
 namespace CSharpInterviewPractice
 {
-    interface TreeRotater<T>
+    abstract class TreeRotater<T>
     {
-        BinaryTreeNode<T> Rotate(BinaryTreeNode<T> root);
+        protected BinaryTreeNode<T> rootParent;
+        protected BinaryTreeNode<T> root;
+        protected BinaryTreeNode<T> pivot;
+        public TreeRotater(BinaryTreeNode<T> root)
+        {
+            this.root = root;
+            if (root == null) throw new ArgumentNullException("root");
+            this.rootParent = (BinaryTreeNode<T>) root.Parent;
+            this.pivot = RootOtherSideNode;
+            if (pivot == null) throw new ArgumentException("No pivot could be found.", "root");
+        }
+
+        protected abstract BinaryTreeNode<T> PivotRotationSideNode { get; set; }
+        protected abstract BinaryTreeNode<T> RootOtherSideNode { get; set; }
+
+        public BinaryTreeNode<T> Rotate()
+        {
+            RootOtherSideNode = PivotRotationSideNode;
+            PivotRotationSideNode = root;
+            if (rootParent == null) { }
+            else if (root == rootParent.Left) rootParent.Left = pivot;
+            else if (root == rootParent.Right) rootParent.Right = pivot;
+            return pivot;
+        }
     }
 
     class LeftRotater<T> : TreeRotater<T>
     {
-        public BinaryTreeNode<T> Rotate(BinaryTreeNode<T> root)
-        {
-            if (root == null) throw new ArgumentNullException("root");
-            BinaryTreeNode<T> pivot = root.Right;
-            if (pivot == null) throw new ArgumentException("No pivot could be found.", "root");
+        public LeftRotater(BinaryTreeNode<T> root) : base(root) { }
 
-            root.Right = pivot.Left;
-            pivot.Left = root;
-            return pivot;
+        protected override BinaryTreeNode<T> PivotRotationSideNode
+        {
+            get { return this.pivot.Left; }
+            set { this.pivot.Left = value; }
+        }
+
+        protected override BinaryTreeNode<T> RootOtherSideNode
+        {
+            get { return this.root.Right; }
+            set { this.root.Right = value; }
         }
     }
 
     class RightRotater<T> : TreeRotater<T>
     {
-        public BinaryTreeNode<T> Rotate(BinaryTreeNode<T> root)
-        {
-            if (root == null) throw new ArgumentNullException("root");
-            BinaryTreeNode<T> pivot = root.Left;
-            if (pivot == null) throw new ArgumentException("No pivot could be found.", "root");
+        public RightRotater(BinaryTreeNode<T> root) : base(root) { }
 
-            root.Left = pivot.Right;
-            pivot.Right = root;
-            return pivot;
+        protected override BinaryTreeNode<T> PivotRotationSideNode
+        {
+            get { return this.pivot.Right; }
+            set { this.pivot.Right = value; }
+        }
+
+        protected override BinaryTreeNode<T> RootOtherSideNode
+        {
+            get { return this.root.Left; }
+            set { this.root.Left = value; }
         }
     }
 
@@ -45,28 +74,34 @@ namespace CSharpInterviewPractice
         [Test]
         public void RotateLeftFromRR()
         {
-            BinaryTreeNode<int> root = new BinaryTreeNode<int>(5);
-            root.RightValue = 7; root.Right.RightValue = 9;
+            BinaryTreeNode<int> root = new BinaryTreeNode<int>(3);
+            root.RightValue = 5; root.Right.RightValue = 7; root.Right.Right.RightValue = 9;
 
-            TreeRotater<int> tr = new LeftRotater<int>();
-            BinaryTreeNode<int> newRoot = tr.Rotate(root);
+            BinaryTreeNode<int> subTreeRoot = root.Right;
 
-            Assert.AreEqual(7, newRoot.Value);
-            Assert.AreEqual(5, newRoot.LeftValue);
-            Assert.AreEqual(9, newRoot.RightValue);
+            TreeRotater<int> tr = new LeftRotater<int>(subTreeRoot);
+            BinaryTreeNode<int> newSubTreeRoot = tr.Rotate();
+
+            Assert.AreEqual(7, newSubTreeRoot.Value);
+            Assert.AreEqual(5, newSubTreeRoot.LeftValue);
+            Assert.AreEqual(9, newSubTreeRoot.RightValue);
+            Assert.AreSame(root, newSubTreeRoot.Parent);
         }
 
         [Test]
         public void RotateLeftFromR()
         {
-            BinaryTreeNode<int> root = new BinaryTreeNode<int>(5);
-            root.RightValue = 7;
+            BinaryTreeNode<int> root = new BinaryTreeNode<int>(3);
+            root.RightValue = 5; root.Right.RightValue = 7;
 
-            TreeRotater<int> tr = new LeftRotater<int>();
-            BinaryTreeNode<int> newRoot = tr.Rotate(root);
+            BinaryTreeNode<int> subTreeRoot = root.Right;
 
-            Assert.AreEqual(7, newRoot.Value);
-            Assert.AreEqual(5, newRoot.LeftValue);
+            TreeRotater<int> tr = new LeftRotater<int>(subTreeRoot);
+            BinaryTreeNode<int> newSubTreeRoot = tr.Rotate();
+
+            Assert.AreEqual(7, newSubTreeRoot.Value);
+            Assert.AreEqual(5, newSubTreeRoot.LeftValue);
+            Assert.AreSame(root, newSubTreeRoot.Parent);
         }
 
         [Test]
@@ -75,42 +110,46 @@ namespace CSharpInterviewPractice
             BinaryTreeNode<int> root = new BinaryTreeNode<int>(5);
             root.LeftValue = 3;
 
-            TreeRotater<int> tr = new LeftRotater<int>();
-            Assert.Throws<ArgumentException>(delegate { tr.Rotate(root); });
+            Assert.Throws<ArgumentException>(delegate { new LeftRotater<int>(root); });
         }
 
         [Test]
         public void RotateLeftFromNull()
         {
-            TreeRotater<int> tr = new LeftRotater<int>();
-            Assert.Throws<ArgumentNullException>(delegate { tr.Rotate(null); });
+            Assert.Throws<ArgumentNullException>(delegate { new LeftRotater<int>(null); });
         }
 
         [Test]
         public void RotateRightFromLL()
         {
-            BinaryTreeNode<int> root = new BinaryTreeNode<int>(5);
-            root.LeftValue = 3; root.Left.LeftValue = 2;
+            BinaryTreeNode<int> root = new BinaryTreeNode<int>(7);
+            root.LeftValue = 5; root.Left.LeftValue = 3; root.Left.Left.LeftValue = 2;
 
-            TreeRotater<int> tr = new RightRotater<int>();
-            BinaryTreeNode<int> newRoot = tr.Rotate(root);
+            BinaryTreeNode<int> subTreeRoot = root.Left;
 
-            Assert.AreEqual(3, newRoot.Value);
-            Assert.AreEqual(2, newRoot.LeftValue);
-            Assert.AreEqual(5, newRoot.RightValue);
+            TreeRotater<int> tr = new RightRotater<int>(subTreeRoot);
+            BinaryTreeNode<int> newSubTreeRoot = tr.Rotate();
+
+            Assert.AreEqual(3, newSubTreeRoot.Value);
+            Assert.AreEqual(2, newSubTreeRoot.LeftValue);
+            Assert.AreEqual(5, newSubTreeRoot.RightValue);
+            Assert.AreSame(root, newSubTreeRoot.Parent);
         }
 
         [Test]
         public void RotateRightFromL()
         {
-            BinaryTreeNode<int> root = new BinaryTreeNode<int>(5);
-            root.LeftValue = 3;
+            BinaryTreeNode<int> root = new BinaryTreeNode<int>(7);
+            root.LeftValue = 5; root.Left.LeftValue = 3;
 
-            TreeRotater<int> tr = new RightRotater<int>();
-            BinaryTreeNode<int> newRoot = tr.Rotate(root);
+            BinaryTreeNode<int> subTreeRoot = root.Left;
 
-            Assert.AreEqual(3, newRoot.Value);
-            Assert.AreEqual(5, newRoot.RightValue);
+            TreeRotater<int> tr = new RightRotater<int>(subTreeRoot);
+            BinaryTreeNode<int> newSubTreeRoot = tr.Rotate();
+
+            Assert.AreEqual(3, newSubTreeRoot.Value);
+            Assert.AreEqual(5, newSubTreeRoot.RightValue);
+            Assert.AreSame(root, newSubTreeRoot.Parent);
         }
 
         [Test]
@@ -119,15 +158,13 @@ namespace CSharpInterviewPractice
             BinaryTreeNode<int> root = new BinaryTreeNode<int>(5);
             root.RightValue = 3;
 
-            TreeRotater<int> tr = new RightRotater<int>();
-            Assert.Throws<ArgumentException>(delegate { tr.Rotate(root); });
+            Assert.Throws<ArgumentException>(delegate { new RightRotater<int>(root); });
         }
 
         [Test]
         public void RotateRightFromNull()
         {
-            TreeRotater<int> tr = new RightRotater<int>();
-            Assert.Throws<ArgumentNullException>(delegate { tr.Rotate(null); });
+            Assert.Throws<ArgumentNullException>(delegate { new RightRotater<int>(null); });
         }
     }
 }
