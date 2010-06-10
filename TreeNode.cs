@@ -73,6 +73,11 @@ namespace CSharpInterviewPractice
             this.Children.Add(child);
             return child;
         }
+
+        public int NodeCount
+        {
+            get { return Children.Sum(n => n.NodeCount) + 1; }
+        }
     }
 
     [TestFixture]
@@ -155,6 +160,20 @@ namespace CSharpInterviewPractice
             Assert.AreEqual(2, root.Children[0].Children[0].Siblings.Count);
             Assert.AreEqual(5, root.Children[0].Children[0].Siblings[0].Value);
             Assert.AreEqual(12, root.Children[0].Children[0].Siblings[1].Value);
+        }
+
+        [Test]
+        public void NodeCountReturnsCorrectCount()
+        {
+            TreeNode<int> root = new TreeNode<int>(5);
+            Assert.AreEqual(1, root.NodeCount);
+
+            root.AddChild(7);
+            Assert.AreEqual(2, root.NodeCount);
+            root.Children[0].AddChild(8);
+            Assert.AreEqual(3, root.NodeCount);
+            root.AddChild(6);
+            Assert.AreEqual(4, root.NodeCount);
         }
     }
 }
