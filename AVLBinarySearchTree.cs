@@ -24,33 +24,28 @@ namespace CSharpInterviewPractice
 
         private static BinarySearchTreeNode<T> RebalanceAndReturnNewRoot(BinarySearchTreeNode<T> node)
         {
-            BinarySearchTreeNode<T> nodeParent = (BinarySearchTreeNode<T>)node.Parent;
-            TreeRotater<T> rotater;
+            BinarySearchTreeNode<T> nextNode;
 
-            if (Math.Abs(node.BalanceFactor) <= 1)
-            {
-                return nodeParent == null ? node : RebalanceAndReturnNewRoot(nodeParent);
-            }
-
-            if (node.LeftHeight > node.RightHeight)
+            if (node.BalanceFactor > 1)
             {
                 if (node.Left.RightHeight > node.Left.LeftHeight)
                 {
                     new LeftRotater<T>(node.Left).Rotate();
                 }
-                rotater = new RightRotater<T>(node);
+                nextNode = (BinarySearchTreeNode<T>)new RightRotater<T>(node).Rotate();
             }
-            else
+            else if (node.BalanceFactor < -1)
             {
                 if (node.Right.LeftHeight > node.Right.RightHeight)
                 {
                     new RightRotater<T>(node.Right).Rotate();
                 }
-                rotater = new LeftRotater<T>(node);
+                nextNode = (BinarySearchTreeNode<T>)new LeftRotater<T>(node).Rotate();
             }
+            else if (node.IsRoot) return node;
+            else nextNode = (BinarySearchTreeNode<T>) node.Parent;
 
-            BinarySearchTreeNode<T> subTreeRoot = (BinarySearchTreeNode<T>)rotater.Rotate();
-            return RebalanceAndReturnNewRoot(subTreeRoot);
+            return RebalanceAndReturnNewRoot(nextNode);
         }
     }
 
